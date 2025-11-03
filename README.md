@@ -1,0 +1,2 @@
+# Luokkavarausjarjestelma
+Luokkavarausjarjestelma kouluprojekti
