@@ -1,3 +1,5 @@
+TÄMÄ ON VANHA!!
+
 Tiedostot
 
 Seuraavat tiedostot sisältyvät projektiin (kansioon htdocs/luokkavaraus):
@@ -21,5 +23,6 @@ Seuraavat tiedostot sisältyvät projektiin (kansioon htdocs/luokkavaraus):
 - assets/style.css — perus-tyylit
 
 - assets/main.js — frontendin JavaScript (fetch API)
+
 
 - README.md — asennusohjeet ja huomiot
