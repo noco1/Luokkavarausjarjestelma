@@ -1,0 +1,47 @@
+body 
+{ 
+    font-family: Arial, sans-serif;
+    background:#f4f6fb; color:#222;
+    padding:20px; 
+}
+.card 
+{
+    background: white; padding:16px;
+    border-radius:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom:16px; 
+}
+input, select 
+{ 
+    width:100%;
+    padding:8px;
+    margin:6px 0;
+    box-sizing:border-box; 
+}
+button 
+{ 
+    background:#2b3d70;
+    color:white;
+    border:none;
+    padding:8px 12px;
+    border-radius:6px;
+    cursor:pointer; 
+}
+button:disabled 
+{ 
+    opacity:0.6; 
+}
+.msg 
+{ 
+    color: #b00; 
+}
+table 
+{ 
+    width:100%; border-collapse:collapse;
+}
+th, td 
+{ 
+    padding:8px; 
+    border-bottom:1px solid #eee; 
+    text-align:left; 
+}
