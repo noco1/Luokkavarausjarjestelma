@@ -5,21 +5,21 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 
 if ($method === 'GET') {
-// optional: classroom_id to filter
-$classroom = $_GET['classroom_id'] ?? null;
-if ($classroom) {
-$stmt = $conn->prepare('SELECT r.*, u.full_name as user_name, c.name as classroom_name FROM reservations r JOIN users u ON r.user_id = u.id JOIN classrooms c ON r.classroom_id = c.id WHERE r.classroom_id = ? ORDER BY r.start_time');
-$stmt->bind_param('s', $classroom);
-$stmt->execute();
-$res = $stmt->get_result();
-} else {
-$res = $conn->query('SELECT r.*, u.full_name as user_name, c.name as classroom_name FROM reservations r JOIN users u ON r.user_id = u.id JOIN classrooms c ON r.classroom_id = c.id ORDER BY r.start_time');
-}
+    // optional: classroom_id to filter
+    $classroom = $_GET['classroom_id'] ?? null;
+    if ($classroom) {
+        $stmt = $conn->prepare('SELECT r.*, u.full_name as user_name, c.name as classroom_name FROM reservations r JOIN users u ON r.user_id = u.id JOIN classrooms c ON r.classroom_id = c.id WHERE r.classroom_id = ? ORDER BY r.start_time');
+        $stmt->bind_param('s', $classroom);
+        $stmt->execute();
+        $res = $stmt->get_result();
+    } else {
+        $res = $conn->query('SELECT r.*, u.full_name as user_name, c.name as classroom_name FROM reservations r JOIN users u ON r.user_id = u.id JOIN classrooms c ON r.classroom_id = c.id ORDER BY r.start_time');
+    }
 
 
-$rows = [];
-while ($r = $res->fetch_assoc()) $rows[] = $r;
-json_response($rows);
+    $rows = [];
+    while ($r = $res->fetch_assoc()) $rows[] = $r;
+    json_response($rows);
 }
 
 
@@ -29,7 +29,7 @@ $input = json_decode(file_get_contents('php://input'), true);
 
 
 if ($method === 'POST') {
-// Create reservation
+    // Create reservation
     $classroom_id = $input['classroom_id'] ?? null;
     $start_time = $input['start_time'] ?? null;
     $end_time = $input['end_time'] ?? null;
