@@ -7,8 +7,9 @@ $email = $_POST['email'] ?? '';
 $pass = $_POST['password'] ?? '';
 
 
-if (!$email || !$pass) {
-json_response(['status' => 'error', 'message' => 'Missing credentials'], 400);
+if (!$email || !$pass) 
+{
+    json_response(['status' => 'error', 'message' => 'Missing credentials'], 400);
 }
 
 
