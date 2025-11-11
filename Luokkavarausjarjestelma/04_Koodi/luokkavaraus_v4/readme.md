@@ -1,3 +1,7 @@
+Tämä on Moodle ohjeen mukaan tehty:  Tehtävä: Luokkien listaaminen (PHP + MySQL)
+
+Omat muistiin panot:
+
 db.php:
 
 Kehitysvaiheessa voi tulostaa virheen, tuotannossa ei.
@@ -14,4 +18,5 @@ Kehitysvaiheessa virheen tulostus voi auttaa tuotannossa lokita
 catch (PDOException $e)
 {
     die('Tietokantavirhe: ' . $e->getMessage());
+
 }
