@@ -1,0 +1,11 @@
+-- Active: 1747390571897@@127.0.0.1@3306
+CREATE DATABASE luokkavaraus;
+USE luokkavaraus;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
