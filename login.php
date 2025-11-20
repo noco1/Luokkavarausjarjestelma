@@ -1,29 +1,41 @@
 <?php
-require_once '../functions.php';
-$token = generate_csrf_token();
+require_once 'classes.php';
+session_start();
+$db = new DB('127.0.0.1', 'varausdb', 'dbuser', 'dbpass');
+$pdo = $db->pdo();
+$userModel = new UserModel($pdo);
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+$email = trim($_POST['email'] ?? '');
+$password = $_POST['password'] ?? '';
+$errors = [];
+
+
+$user = $userModel->findByEmail($email);
+if (!$user || !password_verify($password, $user['password_hash'])) {
+$errors[] = 'Virheellinen sähköposti tai salasana.';
+} else {
+$_SESSION['user_id'] = $user['id'];
+header('Location: index.php');
+exit;
+}
+}
 ?>
 <!doctype html>
 <html>
-<head>
-<meta charset="utf-8">
-<title>Kirjaudu sisään</title>
-</head>
+<head><meta charset="utf-8"><title>Kirjaudu</title></head>
 <body>
 <h1>Kirjaudu</h1>
-<form action='login_process.php' method='post'>
-    <input type='hidden' name="csrf_token" value="<?php echo htmlspecialchars($token); ?>">
-    <label>
-        Käyttäjänimi tai Sähköposti:
-        <input type="text" name="identifier" required>
-    </label><br><br>
-
-    <label>
-        Salasana:
-        <input type="password" name="password" required>
-    </label><br><br>
-
-    <button type="submit">Kirjaudu</button>
+<?php if (!empty($errors)): ?>
+<ul>
+<?php foreach ($errors as $e): ?><li><?=htmlspecialchars($e)?></li><?php endforeach; ?>
+</ul>
+<?php endif; ?>
+<form method="post">
+<label>Sähköposti<br><input name="email" value="<?=htmlspecialchars($email ?? '')?>"></label><br>
+<label>Salasana<br><input type="password" name="password"></label><br>
+<button type="submit">Kirjaudu</button>
 </form>
-<p>Ei vielä tiliä? <a href='register.php'>Rekisteröidy</a></p>
 </body>
 </html>
