@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luokat</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background-color: #f4f4f4; text-align: left; }
+        .filters { margin-bottom: 15px; }
+        .pagination button { margin: 0 3px; }
+        .reserved { color: red; font-weight: bold; }
+        .free { color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>Luokat </h1>
+
+    <div class="filters">
+        <input type="text" id="searchInput" placeholder="Hae nimellä">
+        <input type="number" id="capacityInput" placeholder="Min. kapasiteetti">
+        <input type="text" id="locationInput" placeholder="Sijainti">
+        <button onclick="applyFilters()">Suodata</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nimi</th>
+                <th>Kapasiteetti</th>
+                <th>Sijainti</th>
+                <th>Kuvaus</th>
+                <th>Lisätty</th>
+                <th>Varaus päättyy</th>
+                <th>Status</th>
+                <th>Toiminto</th>
+            </tr>
+        </thead>
+        <tbody id="tablebody"></tbody>
+    </table>
+
+<script>
+    let currentPage = 1;
+    let totalPages = 1;
+
+    function fetchData() {
+        const search = document.getElementById('searchInput').value;
+        const capacity = document.getElementById('capacityInput').value;
+        const location = document.getElementById('locationInput').value;
+
+        const url = `classesApi.php?search=${encodeURIComponent(search)}&capacity=${encodeURIComponent(capacity)}&location=${encodeURIComponent(location)}&page=${currentPage}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                renderTable(data.classes);
+                totalPages = data.totalPages;
+                renderPagination();
+            })
+            .catch(error => console.error('Virhe datan haussa:', error));
+    }
+
+    function renderTable(classes) {
+        const tbody = document.getElementById('tablebody');
+        tbody.innerHTML = '';
+        if (!classes || classes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8">Ei luokkia saatavilla</td></tr>';
+            return;
+        }
+        classes.forEach(cls => {
+            const reservedText = cls.is_reserved == 1 ? '<span class="reserved">Varattu</span>' : '<span class="free">Vapaa</span>';
+            const endTime = cls.end_time ? cls.end_time : '-';
+            const actionLink = cls.is_reserved == 0 ? `<a href="varaa.html?id=${cls.id}">Siirry varaamaan</a>` : '-';
+            const row = `<tr>
+                <td>${cls.name}</td>
+                <td>${cls.capacity}</td>
+                <td>${cls.location}</td>
+                <td>${cls.description}</td>
+                <td>${cls.created_at}</td>
+                <td>${endTime}</td> 
+                <td>${reservedText}</td>
+                <td>${actionLink}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    function renderPagination() {
+        const paginationDiv = document.getElementById('pagination');
+        paginationDiv.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            btn.onclick = () => { currentPage = i; fetchData(); };
+            if (i === currentPage) btn.style.fontWeight = 'bold';
+            paginationDiv.appendChild(btn);
+        }
+    }
+
+    function applyFilters() {
+        currentPage = 1;
+        fetchData();
+    }
+    fetchData();
+</script>
+
+    </script>
+
+    
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Varaa luokka</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 500px; margin: auto; }
+        .class-info { background: #f9f9f9; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd;}
+        form { display: flex; flex-direction: column; gap: 10px; }
+        input, select { padding: 8px; font-size: 14px; }
+        button { padding: 10px; background: #007bff; color: #fff; border: none; color: #007bff; }
+        button:hover { background: #0056b3; }
+        .message { margin-top: 15px; font-weight: bold; }
+        .back-link { display: inline-block; margin-top: 20px; text-decoration: none; color: #007bff; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Varaa luokka</h1>
+        <div id="classInfo" class="class-info" style="display:none;"></div>
+
+        <form id="reservationForm">
+            <label for="classSelect">Valitse luokka:</label>
+            <select id="classSelect" required></select>
+
+            <label for="startTime">Alkamisaika:</label>
+            <input type="datetime-local" id="startTime" required>
+
+            <label for="endTime">Päätymisaika:</label>
+            <input type="datetime-local" id="endTime" required>
+
+            <label for="purpose">Tarkitus:</label>
+            <input type="text" id="purpose" placeholder="Esim. luento" required>
+
+            <label for="participants">Osallistujien määrä</label>
+            <input type="number" id="participants" min="1" required>
+
+            <button type="submit">Varaa</button>
+        </form>
+        <div class="message" id="message"></div>
+
+        <a href="classes.html" class="back-link">Takaisin luokkalistaukseen</a>
+    </div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectClassId = urlParams.get('class_id');
+
+    function showClassInfo(c) {
+        const el = document.getElementById('classInfo');
+        if (!c) {
+            el.style.display = 'none';
+            el.textContent = '';
+            return;
+        }
+        el.style.display = 'block';
+        el.textContent = `${c.name} — ${c.location} — Kapasiteetti: ${c.capacity || 'N/A'}`;
+    }
+
+    function loadClasses() {
+        fetch('get_classes.php')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('classSelect');
+                select.innerHTML = '';
+                data.data.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.id;
+                    option.textContent = `${c.name} (${c.location})`;
+                    if (selectClassId && selectClassId == c.id.toString()) {
+                        option.selected = true;
+                        showClassInfo(c);
+                    }
+                    select.appendChild(option);
+                });
+
+                if (selectClassId) {
+                    const selectedClass = data.data.find(c => c.id == selectClassId);
+                    if (selectedClass) showClassInfo(selectedClass);
+                }
+            })
+            .catch(err => {
+                console.error('Failed to load classes', err);
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadClasses();
+
+        document.getElementById('classSelect').addEventListener('change', function() {
+            const selectedId = this.value;
+            fetch('get_classes.php?class_id=' + encodeURIComponent(selectedId))
+                .then(response => response.json())
+                .then(data => {
+                    const c = data.data && data.data[0] ? data.data[0] : null;
+                    showClassInfo(c);
+                })
+                .catch(() => showClassInfo(null));
+        });
+
+        document.getElementById('reservationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const classId = document.getElementById('classSelect').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const purpose = document.getElementById('purpose').value;
+            const participants = document.getElementById('participants').value;
+
+            fetch('create_reservation.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    class_id: classId,
+                    start_time: startTime,
+                    end_time: endTime,
+                    purpose: purpose,
+                    participants: participants
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                const msg = document.getElementById('message');
+                if (result && result.success) {
+                    msg.style.color = 'green';
+                    msg.textContent = 'Varaus onnistui!';
+                    setTimeout(() => { window.location.href = 'classes.html'; }, 2000);
+                } else {
+                    msg.style.color = 'red';
+                    msg.textContent = (result && result.message) ? result.message : 'Varaus epäonnistui. Yritä uudelleen.';
+                }
+            })
+            .catch(error => {
+                const msg = document.getElementById('message');
+                msg.style.color = 'red';
+                msg.textContent = 'Varaus epäonnistui. Yritä uudelleen.';
+                console.error(error);
+            });
+        });
+    });
+</script>
+
+
+
+
+        
+                            
+
+                 
+          
+    
+    
+</body>
+</html>
