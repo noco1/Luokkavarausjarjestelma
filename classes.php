@@ -1,68 +1,47 @@
 <?php
-class ClassModel {
-private $pdo;
-public function __construct(PDO $pdo) { $this->pdo = $pdo; }
+require_once__DIR__ . '/config/db.php';
 
+$sql = "SELECT id, name, capacity, location, description,
+created_at FROM classes ORDER BY name ASC";
+$stmt = $pdo->prepare($sql);
+$classes = $stmt->fetchAll();
+?>
 
-public function listUpcoming() {
-$stmt = $this->pdo->query("SELECT c.*,
-(c.capacity - COALESCE(SUM(r.seats),0)) AS seats_left
-FROM classes c
-LEFT JOIN reservations r ON r.class_id = c.id AND r.status = 'confirmed'
-WHERE c.start_time >= NOW()
-GROUP BY c.id
-ORDER BY c.start_time ASC");
-return $stmt->fetchAll();
-}
-
-
-public function find($id) {
-$stmt = $this->pdo->prepare("SELECT * FROM classes WHERE id = ? LIMIT 1");
-$stmt->execute([$id]);
-return $stmt->fetch();
-}
-}
-
-
-class ReservationModel {
-private $pdo;
-public function __construct(PDO $pdo) { $this->pdo = $pdo; }
-
-
-public function create($userId, $classId, $seats) {
-$this->pdo->beginTransaction();
-try {
-$stmt = $this->pdo->prepare("SELECT capacity - COALESCE(SUM(r.seats),0) AS seats_left
-FROM classes c
-LEFT JOIN reservations r ON r.class_id = c.id AND r.status = 'confirmed'
-WHERE c.id = ?
-GROUP BY c.id
-FOR UPDATE");
-$stmt->execute([$classId]);
-$row = $stmt->fetch();
-$left = $row ? (int)$row['seats_left'] : 0;
-if ($left < $seats) {
-$this->pdo->rollBack();
-return [ 'success' => false, 'message' => 'Ei tarpeeksi vapaita paikkoja.' ];
-}
-
-
-$ins = $this->pdo->prepare("INSERT INTO reservations (user_id, class_id, seats) VALUES (?, ?, ?)");
-$ins->execute([$userId, $classId, $seats]);
-$this->pdo->commit();
-return [ 'success' => true, 'reservation_id' => $this->pdo->lastInsertId() ];
-} catch (Exception $e) {
-$this->pdo->rollBack();
-return [ 'success' => false, 'message' => $e->getMessage() ];
-}
-}
-
-
-public function listByUser($userId) {
-$stmt = $this->pdo->prepare("SELECT r.*, c.title, c.start_time FROM reservations r
-JOIN classes c ON c.id = r.class_id
-WHERE r.user_id = ? ORDER BY r.reserved_at DESC");
-$stmt->execute([$userId]);
-return $stmt->fetchAll();
-}
-}
+<!doctype html>
+<html lang="fi ">
+<head>
+    <meta charset="utf-8">
+    <title>Luokat</title>
+    <style>
+        table { border-collapse: collapse; width: 100%;}
+        th, td { border: 1px solid #ddd,; padding: 8px; }
+        th { background-color: #f4f4f4; text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>Luokat</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nimi</th>
+                <th>Kapasiteetti</th>
+                <th>Sijainti</th>
+                <th>Kuvaus</th>
+                <th>Luotu</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($classes as $c): ?>
+            <tr>
+                <td><?php echo htmlspecialchars($c['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></td>
+                <td><?php echo htmlspecialchars($c['capacity'], ENT_QUOTES, 'UTF-8'); ?></td>
+                <td><?php echo htmlspecialchars($c['location'], ENT_QUOTES, 'UTF-8'); ?></td>
+                <td><?php echo htmlspecialchars($c['description'], ENT_QUOTES, 'UTF-8'); ?></td>
+                <td><?php echo htmlspecialchars($c['created_at'], ENT_QUOTES, 'UTF-8'); ?></td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php endif; ?>
+</body>
+</html>    
